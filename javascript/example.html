@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description"
+    content="Simple example of using pure Javascript to display METAR weather from api.checkwx.com">
+
+  <title>METAR Weather Example</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+
+<body>
+
+  <div class="container mt-5">
+    <h2>METAR</h2>
+    <h4><span id="icao"></span> <span id="name"></span></h4>
+    <hr>
+    <pre id="raw"></pre>
+    <hr>
+
+    <div id="wind_block" class="d-none">
+      <h5>Wind</h5>
+      <ul>
+        <li>
+          <span id="wind_direction"></span> @ <span id="wind_speed"></span><small> knots</small>
+        </li>
+      </ul>
+    </div>
+
+    <div id="visibility_block" class="d-none">
+      <h5>Visibility</h5>
+      <ul>
+        <li>
+          <span id="visibility_miles"></span><small> miles</small>
+        </li>
+      </ul>
+    </div>
+
+    <div id="cloud_block" class="d-none">
+      <h5>Clouds</h5>
+      <ul id="cloud_list">
+      </ul>
+    </div>
+
+    <div id="cond_block" class="d-none">
+      <h5>Conditions</h5>
+      <ul id="cond_list">
+      </ul>
+    </div>
+
+  </div>
+
+</body>
+
+<script>
+  var xhr = new XMLHttpRequest();
+  xhr.addEventListener("readystatechange", function () {
+    if (this.readyState === 4) {
+      success(JSON.parse(this.responseText));
+    }
+  });
+
+  // KMIA is the airport code for Miami International
+  xhr.open("GET", "https://api.checkwx.com/metar/KMIA/decoded");
+  xhr.setRequestHeader("X-API-KEY", "your-own-api-key");
+  xhr.send();
+
+  function success(response) {
+    if (response.results > 0) {
+      // We only requested one METAR
+      // If you request more than one, the data array would need to be in a loop
+      var metar = response.data[0];
+
+      document.getElementById('icao').innerText = metar.icao;
+      document.getElementById('name').innerText = metar.station.name;
+      document.getElementById('raw').innerText = metar.raw_text;
+
+      if (metar.visibility) {
+        document.getElementById('visibility_miles').innerText = metar.visibility.miles;
+        document.getElementById('visibility_block').classList.remove("d-none");
+      }
+
+      if (metar.wind) {
+        document.getElementById('wind_direction').innerText = metar.wind.degrees;
+        document.getElementById('wind_speed').innerText = metar.wind.speed_kts;
+        document.getElementById('wind_block').classList.remove("d-none");
+      }
+
+      if (metar.clouds[0]) {
+        document.getElementById('cloud_block').classList.remove("d-none");
+        metar.clouds.forEach(cloud => {
+          var el = document.createElement('li');
+          el.innerHTML = cloud.text + ' at ' + cloud.base_feet_agl + ' <small> feet AGL</small>';
+          document.getElementById("cloud_list").appendChild(el);
+        });
+      }
+
+      if (metar.conditions[0]) {
+        document.getElementById('cond_block').classList.remove("d-none");
+        metar.conditions.forEach(cond => {
+          var el = document.createElement('li');
+          el.innerHTML = cond.text;
+          document.getElementById('cond_list').appendChild(el);
+        });
+      }
+    } else {
+      document.getElementById('raw').innerText = 'No results returned from API';
+    }
+  }
+</script>
+
+</html>
