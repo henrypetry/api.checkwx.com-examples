@@ -8,8 +8,9 @@ Currently there are three source code examples in this repository.
 
 * One HTML example written using Javascript
 * One HTML example written using jQuery
+* One HTML example written using jQuery with ICAO form input
 * One HTML example written using PHP
-* All examples produce the same sample output shown below
+* All examples produce the sample output shown below, some with more data if available
 
 ### Notes
 
